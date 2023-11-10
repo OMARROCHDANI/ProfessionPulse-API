@@ -1,4 +1,4 @@
-from rest_framework import generics,mixins
+from rest_framework import generics,mixins,permissions,authentication
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -11,6 +11,7 @@ from .serializers import ProductSerializer
 class ProductCreateAPIView(generics.CreateAPIView):
     queryset = Product.objects.all()  # Specify the queryset to retrieve objects from
     serializer_class = ProductSerializer  # Specify the serializer to convert model instances to JSON
+   
 
     def perform_create(self, serializer):
         # You can add custom logic here before saving the object.
@@ -30,7 +31,12 @@ product_create_view=ProductCreateAPIView.as_view()
 class ProductDetailAPIView(generics.RetrieveAPIView):
     queryset = Product.objects.all()  # Specify the queryset to retrieve objects from
     serializer_class = ProductSerializer  # Specify the serializer to convert model instances to JSON
-
+    authentication_classes = [authentication.SessionAuthentication]
+    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    # in DjangoModelPermissions it can handles put,post,delete, add change delete , but when 
+    # you changed the permissions in django admin of get methods, it does not work,
+    # so you must create a custom one https://www.django-rest-framework.org/api-guide/permissions/#djangomodelpermissions
+    permission_classes = [permissions.DjangoModelPermissions]
 product_detail_view=ProductDetailAPIView.as_view()
 
 
@@ -44,6 +50,9 @@ product_list_view=ProductListAPIView.as_view()
 class ProductListCreateAPIView(generics.ListCreateAPIView):
     queryset = Product.objects.all()  # Specify the queryset to retrieve objects from
     serializer_class = ProductSerializer  # Specify the serializer to convert model instances to JSON
+    authentication_classes = [authentication.SessionAuthentication]
+    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.DjangoModelPermissions]
     
 product_list_create_view=ProductListCreateAPIView.as_view()
 
@@ -51,6 +60,9 @@ product_list_create_view=ProductListCreateAPIView.as_view()
 class ProductUpdateAPIView(generics.UpdateAPIView):
     queryset = Product.objects.all()  # Specify the queryset to retrieve objects from
     serializer_class = ProductSerializer  # Specify the serializer to convert model instances to JSON
+    authentication_classes = [authentication.SessionAuthentication]
+    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.DjangoModelPermissions]
     lookup_field = 'pk'
     def perform_update(self, serializer):
         instance = serializer.save()
@@ -64,6 +76,9 @@ product_update_view=ProductUpdateAPIView.as_view()
 class ProductDestroyAPIView(generics.DestroyAPIView):
     queryset = Product.objects.all()  # Specify the queryset to retrieve objects from
     serializer_class = ProductSerializer  # Specify the serializer to convert model instances to JSON
+    authentication_classes = [authentication.SessionAuthentication]
+    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.DjangoModelPermissions]
     
 product_destroy_view=ProductDestroyAPIView.as_view()
 
@@ -80,20 +95,14 @@ product_destroy_view=ProductDestroyAPIView.as_view()
 # class ProductMixinView(mixins.ListModelMixin,generics.GenericAPIView):
 #     queryset = Product.objects.all()  
 #     serializer_class = ProductSerializer  
-
+# # this def get() replace if method == 'GET' in the old Django view
 #     def get(self, request, *args, **kwargs): 
 #         return self.list(request, **args, **kwargs)
     
 # product_mixin_view = ProductMixinView.as_view()
 
-# class ProductMixinView(mixins.ListModelMixin,generics.GenericAPIView):
-#     queryset = Product.objects.all()  
-#     serializer_class = ProductSerializer  
 
-#     def get(self, request, *args, **kwargs): 
-#         return self.list(request, **args, **kwargs)
-    
-# product_mixin_view = ProductMixinView.as_view()
+
 
 
 class ProductMixinView(
